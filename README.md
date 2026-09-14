@@ -4,7 +4,7 @@
 
 ### An 8-desk, 25-agent AI equity-research pipeline that works like a real investment committee — propose, attack, verify, judge, clear — never the same voice twice.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-teal.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](agent/pyproject.toml)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14-black?logo=next.js&logoColor=white)](frontend/package.json)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-1C3C3C)](docs/adr/0001-orchestration-langgraph.md)
@@ -12,6 +12,9 @@
 [![Local-first LLM](https://img.shields.io/badge/LLM-Ollama%20%2F%20local--first-8A2BE2)](agent/src/agents/routing.py)
 [![Tests](https://img.shields.io/badge/backend%20tests-178%20passed-brightgreen)](agent/tests)
 [![Zero-hallucination policy](https://img.shields.io/badge/citations-required%20on%20every%20claim-critical)](docs/AGENTS_MASTER_REFERENCE.md)
+
+**Repository maintainer:** [Abhishek Maheshwari](https://github.com/Abhishek-1024)  
+**Provenance:** Imported from [tejaskhadke3103/IROS_Equity_Research](https://github.com/tejaskhadke3103/IROS_Equity_Research); original contributor attribution is retained under the Apache 2.0 licence.
 
 **No paid data feeds. No cloud LLM required. Runs entirely on your machine.**
 
