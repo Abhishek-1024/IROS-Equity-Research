@@ -1,0 +1,109 @@
+## OPTIONAL local infrastructure for IROS. None of this is required to run the
+## system at all: agent/.env's default DATABASE_URL is a local SQLite file (see
+## agent/src/core/config.py / src/agents/checkpointing/checkpointer.py), so the
+## whole 22-agent pipeline + API + WebSocket runs on a bare laptop with zero
+## containers. Use this compose file only if you specifically want a real,
+## shared Postgres (set DATABASE_URL to a postgresql+asyncpg:// URL to switch to
+## it) plus Redis/MinIO/OpenSearch for the parts of the codebase that will use
+## them once wired up (nothing does yet as of this revision — see their module
+## docstrings). Credentials/ports match agent/.env.example exactly, so the
+## FastAPI app (run separately with `uvicorn src.api.main:app --reload` from
+## agent/) works against this stack with zero extra configuration if you do use it.
+##
+## Usage: docker compose up -d
+## Postgres data persists in the `iros-postgres-data` named volume across restarts;
+## `docker compose down -v` wipes it if you want a clean slate.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: iros-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: iros
+      POSTGRES_PASSWORD: iros
+      POSTGRES_DB: iros
+    ports:
+      - "5432:5432"
+    volumes:
+      - iros-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iros -d iros"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: iros-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - iros-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: iros-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: changeme
+      MINIO_ROOT_PASSWORD: changeme
+    ports:
+      - "9000:9000" # S3 API — matches OBJECT_STORE_ENDPOINT
+      - "9001:9001" # Web console
+    volumes:
+      - iros-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: iros-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 changeme changeme &&
+      mc mb --ignore-existing local/iros-artifacts
+      "
+
+  opensearch:
+    image: opensearchproject/opensearch:2
+    container_name: iros-opensearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      # Dev-only: the security plugin requires a strong admin password and TLS
+      # setup that isn't wired up anywhere in this app yet (opensearch_url in
+      # config.py is plain http://). Disable it for local dev; production must
+      # re-enable it with real TLS/auth, not this compose file.
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - iros-opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  iros-postgres-data:
+  iros-redis-data:
+  iros-minio-data:
+  iros-opensearch-data:
