@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# Node / frontend
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/
+
+# Env & secrets
+.env
+.env.*
+!*.env.example
+
+# Databases & runtime data (SQLite + WAL/SHM sidecar files, wherever they land)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Downloaded/cached filings & other fetched artifacts (regenerated on demand,
+# not source - see agent/data/filings_cache/ and repo-root data/filings_cache/,
+# the latter a known stray from a wrong-cwd run, see memories/repo/setup.md)
+data/filings_cache/
+agent/data/filings_cache/
+
+# Throwaway / scratch files that have shown up at the repo root during dev
+_tmp_*.json
+
+# Generated demo/output artifacts (regenerate via agent/scripts/generate_professional_model.py)
+agent/*_professional_model.xlsx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# Data & artifacts
+*.log
+tmp/
+.cache/
